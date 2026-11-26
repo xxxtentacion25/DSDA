@@ -1,0 +1,29 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+url = "https://raw.githubusercontent.com/Gaurav-30/Boomerz/main/city_day.csv"
+data = pd.read_csv(url)
+data["Date"] = pd.to_datetime(
+    data["Date"], format="mixed", dayfirst=True, errors="coerce"
+)
+cities = ["Chennai", "Bengaluru", "Kochi",
+          "Hyderabad", "Delhi", "Mumbai"]
+data = data[data["City"].isin(cities)].copy()
+data["AQI"] = pd.to_numeric(data["AQI"], errors="coerce")
+data = data.dropna(subset=["Date", "AQI"])
+print("INDIAN CITIES AIR QUALITY ANALYSIS")
+print(data.groupby("City")["AQI"].agg(
+    ["count", "mean", "min", "max"]
+))
+plt.figure(figsize=(9, 5))
+sns.barplot(data=data, x="City", y="AQI", errorbar=None)
+plt.title("Average AQI of Major Indian Cities")
+plt.xticks(rotation=30)
+plt.tight_layout()
+plt.show()
+plt.figure(figsize=(10, 5))
+sns.lineplot(data=data, x="Date", y="AQI",
+             hue="City", errorbar=None)
+plt.title("Air Quality Trends in Indian Cities")
+plt.tight_layout()
+plt.show()
