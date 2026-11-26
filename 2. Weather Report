@@ -1,0 +1,39 @@
+import requests
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+url = "https://archive-api.open-meteo.com/v1/archive"
+params = {
+    "latitude": 11.0168,
+    "longitude": 76.9558,
+    "start_date": "2015-01-01",
+    "end_date": "2025-12-31",
+    "daily": "temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum",
+    "timezone": "Asia/Kolkata"
+}
+response = requests.get(url, params=params)
+response.raise_for_status()
+data = pd.DataFrame(response.json()["daily"])
+data["time"] = pd.to_datetime(data["time"])
+print("COIMBATORE WEATHER ANALYSIS")
+print(data.describe())
+data["Year"] = data["time"].dt.year
+yearly = data.groupby("Year").agg({
+    "temperature_2m_mean": "mean",
+    "precipitation_sum": "sum"
+}).reset_index()
+print("\nYearly Weather Statistics")
+print(yearly)
+plt.figure(figsize=(9, 5))
+sns.lineplot(data=yearly, x="Year", y="temperature_2m_mean", marker="o")
+plt.title("Yearly Average Temperature in Coimbatore")
+plt.ylabel("Temperature (°C)")
+plt.tight_layout()
+plt.show()
+plt.figure(figsize=(9, 5))
+sns.barplot(data=yearly, x="Year", y="precipitation_sum", errorbar=None)
+plt.title("Annual Rainfall in Coimbatore")
+plt.ylabel("Rainfall (mm)")
+plt.xticks(rotation=30)
+plt.tight_layout()
+plt.show()
